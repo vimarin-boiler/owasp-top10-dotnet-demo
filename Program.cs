@@ -1,4 +1,3 @@
-using Microsoft.OpenApi.Models;
 using OwaspTop10Demo.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,7 +13,7 @@ builder.Services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo
+    c.SwaggerDoc("v1", new()
     {
         Title = "OWASP Top 10 Demo API",
         Version = "v1"
