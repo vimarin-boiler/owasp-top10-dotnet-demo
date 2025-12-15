@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>OWASP Top 10 Demo - Microfrontend</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        :root {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #0f172a;
+            color: #e5e7eb;
+        }
+
+        body {
+            margin: 0;
+            padding: 0 1rem 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: #facc15;
+        }
+
+        a {
+            color: #38bdf8;
+        }
+
+        .card {
+            background: #020617;
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-top: 1rem;
+            border: 1px solid #1e293b;
+            box-shadow: 0 18px 30px rgba(15,23,42,0.7);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: .75rem;
+            gap: .5rem;
+        }
+
+        .pill {
+            font-size: 0.75rem;
+            padding: 0.1rem 0.5rem;
+            border-radius: 999px;
+            border: 1px solid #4b5563;
+            color: #9ca3af;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+
+        input, textarea, button {
+            font-family: inherit;
+        }
+
+            input[type="text"],
+            input[type="email"],
+            input[type="password"],
+            input[type="number"],
+            textarea {
+                width: 100%;
+                padding: 0.4rem 0.55rem;
+                border-radius: 0.5rem;
+                border: 1px solid #1f2937;
+                background: #020617;
+                color: #e5e7eb;
+                box-sizing: border-box;
+            }
+
+                input:focus, textarea:focus {
+                    outline: 1px solid #38bdf8;
+                    border-color: #38bdf8;
+                }
+
+        button {
+            border-radius: 999px;
+            padding: 0.45rem 0.9rem;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #22c55e, #22d3ee);
+            color: #020617;
+        }
+
+        .btn-secondary {
+            background: #020617;
+            color: #e5e7eb;
+            border: 1px solid #4b5563;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .col {
+            flex: 1 1 260px;
+        }
+
+        pre {
+            background: #020617;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            border: 1px solid #1e293b;
+            overflow-x: auto;
+            font-size: 0.8rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th, td {
+            border-bottom: 1px solid #1f2937;
+            padding: 0.35rem 0.3rem;
+            text-align: left;
+        }
+
+        th {
+            color: #cbd5f5;
+            font-weight: 600;
+        }
+
+        .badge-unsafe {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fecaca;
+            border-radius: 999px;
+            padding: 0.1rem 0.5rem;
+            font-size: 0.75rem;
+            border: 1px solid rgba(248, 113, 113, 0.4);
+        }
+
+        .badge-safe {
+            background: rgba(34, 197, 94, 0.1);
+            color: #bbf7d0;
+            border-radius: 999px;
+            padding: 0.1rem 0.5rem;
+            font-size: 0.75rem;
+            border: 1px solid rgba(22, 163, 74, 0.4);
+        }
+
+        .hint {
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 0.3rem 0.8rem;
+            border-radius: 999px;
+            border: 1px solid #4b5563;
+            font-size: 0.8rem;
+            cursor: pointer;
+            background: #020617;
+            color: #e5e7eb;
+            white-space: nowrap;
+        }
+
+            .tab strong {
+                font-weight: 700;
+            }
+
+            .tab.active {
+                background: linear-gradient(135deg, #22c55e, #22d3ee);
+                color: #020617;
+                border-color: transparent;
+            }
+
+        .section {
+            display: none;
+        }
+
+            .section.active {
+                display: block;
+            }
+
+        @media (max-width: 720px) {
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>OWASP Top 10 Demo – Microfrontend</h1>
+        <p class="hint">
+            Esta página estática se sirve desde la propia API <strong>OwaspTop10Demo</strong>.
+            Arranca la API (F5 en Visual Studio) y abre <code>/index.html</code>.
+            Cada pestaña llama a endpoints inseguros vs seguros para un riesgo OWASP.
+        </p>
+
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <strong>Cómo usar esto</strong>
+                    <div class="hint">
+                        Juega con los inputs, prueba primero la versión
+                        <span class="badge-unsafe">INSEGURA</span> y luego la
+                        <span class="badge-safe">SEGURA</span>, y mira cómo cambian las respuestas.
+                    </div>
+                </div>
+                <span class="pill">Backend: ASP.NET Core Web API + SQLite</span>
+            </div>
+        </div>
+
+        <div class="tabs">
+
+
+            <button class="tab active" data-target="section-a01"><strong>A01</strong> Access Control</button>
+            <button class="tab" data-target="section-a02"><strong>A02</strong> Crypto</button>
+            <button class="tab" data-target="section-a03"><strong>A03</strong> SQL Injection</button>
+            <button class="tab" data-target="section-a04"><strong>A04</strong> Insecure Design</button>
+            <button class="tab" data-target="section-a0506"><strong>A05/A06</strong> Config & Components</button>
+            <button class="tab" data-target="section-a07"><strong>A07</strong> Auth & Session</button>
+            <button class="tab" data-target="section-a08"><strong>A08</strong> Integrity</button>
+            <button class="tab" data-target="section-a09"><strong>A09</strong> Logging</button>
+            <button class="tab" data-target="section-a10"><strong>A10</strong> SSRF</button>
+
+        </div>
+
+        <!-- A03 SQL Injection -->
+        <section id="section-a03" class="section active">
+            <div class="card">
+                <div class="card-header">
+                    <h2>A03 – SQL Injection (BD real SQLite)</h2>
+                    <div>
+                        <span class="badge-unsafe">/api/injection/insecure-db</span>
+                        &nbsp;
+                        <span class="badge-safe">/api/injection/secure-db</span>
+                    </div>
+                </div>
+
+                <p class="hint">
+                    <strong>¿Qué es?</strong> Inyección ocurre cuando datos controlados por el usuario se mezclan dentro
+                    de una consulta o comando (SQL, NoSQL, LDAP, etc.) sin saneo ni parametrización, permitiendo al atacante
+                    alterar la consulta ejecutada por el servidor.
+                </p>
+                <p class="hint">
+                    <strong>¿Cómo se explota?</strong> El atacante envía payloads como
+                    <code>' OR 1=1 --</code> en campos de login o filtros. Si se concatenan directamente en la cadena SQL,
+                    puede saltarse autenticación, extraer todos los registros, modificar o borrar datos.
+                </p>
+                <p class="hint">
+                    <strong>Más info oficial:</strong>
+                    <a href="https://owasp.org/Top10/2021/A03_2021-Injection/" target="_blank" rel="noopener">
+                        OWASP Top 10 – A03:2021 Injection
+                    </a>
+                </p>
+
+                <div class="row">
+                    <div class="col">
+                        <h3>Entrada</h3>
+                        <label for="sql-username">Usuario</label>
+                        <input id="sql-username" type="text" value="alice" />
+
+                        <label for="sql-password">Password</label>
+                        <input id="sql-password" type="text" value="Password123" />
+
+                        <p class="hint">
+                            Usuarios válidos: <code>alice/Password123</code>, <code>bob/Secret456</code>, <code>admin/AdminPass!</code>
+                        </p>
+                        <p class="hint">
+                            Prueba un payload de inyección: <code>' OR 1=1 --</code> como usuario.
+                        </p>
+
+                        <div class="btn-group">
+                            <button class="btn-primary" onclick="runSqlInjection('insecure')">
+                                Ejecutar versión INSEGURA
+                            </button>
+                            <button class="btn-secondary" onclick="runSqlInjection('secure')">
+                                Ejecutar versión SEGURA
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <h3>Consulta generada</h3>
+                        <pre id="sql-query-output">– Aquí verás la consulta SQL ejecutada…</pre>
+                    </div>
+                </div>
+
+                <h3>Resultados devueltos</h3>
+                <div id="sql-results-wrapper">
+                    <div class="hint">Todavía no has lanzado ninguna consulta.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- A02 Crypto -->
+        <section id="section-a02" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2>A02 – Fallos criptográficos (contraseñas)</h2>
+                    <div>
+                        <span class="badge-unsafe">/api/crypto/insecure-register</span>
+                        &nbsp;
+                        <span class="badge-safe">/api/crypto/secure-register</span>
+                    </div>
+                </div>
+
+                <p class="hint">
+                    <strong>¿Qué es?</strong> Son errores en el uso (o ausencia) de criptografía que provocan exposición de datos
+                    sensibles: contraseñas en texto plano, cifrados débiles, claves reutilizadas, uso de algoritmos obsoletos, etc.
+                </p>
+                <p class="hint">
+                    <strong>¿Cómo se explota?</strong> Si un atacante roba la base de datos y las contraseñas están en claro
+                    o con hashes débiles, puede recuperar rápidamente credenciales y usarlas dentro y fuera de la aplicación.
+                </p>
+                <p class="hint">
+                    <strong>Más info oficial:</strong>
+                    <a href="https://owasp.org/Top10/2021/A02_2021-Cryptographic_Failures/" target="_blank" rel="noopener">
+                        OWASP Top 10 – A02:2021 Cryptographic Failures
+                    </a>
+                </p>
+
+                <div class="row">
+                    <div class="col">
+                        <h3>Nuevo usuario</h3>
+                        <label for="crypto-username">Usuario</label>
+                        <input id="crypto-username" type="text" value="demoUser" />
+                        <label for="crypto-email">Email</label>
+                        <input id="crypto-email" type="email" value="demo@example.com" />
+                        <label for="crypto-password">Password</label>
+                        <input id="crypto-password" type="password" value="SuperSecreta123" />
+
+                        <div class="btn-group">
+                            <button class="btn-primary" onclick="runCrypto('insecure')">Registrar INSEGURO</button>
+                            <button class="btn-secondary" onclick="runCrypto('secure')">Registrar SEGURO (hash)</button>
+                        </div>
+                        <p class="hint">
+                            Mira cómo cambia el campo <code>PasswordHash</code>.
+                        </p>
+                    </div>
+                    <div class="col">
+                        <h3>Respuesta de la API</h3>
+                        <pre id="crypto-output">– Aquí verás el JSON devuelto…</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- A01 Access Control -->
+        <section id="section-a01" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2>A01 – Broken Access Control</h2>
+                    <div>
+                        <span class="badge-unsafe">/api/accesscontrol/insecure/{id}</span>
+                        &nbsp;
+                        <span class="badge-safe">/api/accesscontrol/secure/{id}?currentUserId=</span>
+                    </div>
+                </div>
+
+                <p class="hint">
+                    <strong>¿Qué es?</strong> Fallos de control de acceso permiten a un usuario hacer más de lo que debería:
+                    ver datos de otros usuarios, modificar recursos que no son suyos, invocar acciones administrativas, etc.
+                </p>
+                <p class="hint">
+                    <strong>¿Cómo se explota?</strong> Normalmente cambiando IDs en la URL, manipulando parámetros o forzando
+                    rutas (por ejemplo, probar <code>/api/.../2</code> cuando el usuario sólo debería ver su propio ID 1).
+                </p>
+                <p class="hint">
+                    <strong>Más info oficial:</strong>
+                    <a href="https://owasp.org/Top10/2021/A01_2021-Broken_Access_Control/" target="_blank" rel="noopener">
+                        OWASP Top 10 – A01:2021 Broken Access Control
+                    </a>
+                </p>
+
+                <div class="row">
+                    <div class="col">
+                        <h3>Parámetros</h3>
+                        <label for="access-id">ID del usuario a consultar</label>
+                        <input id="access-id" type="number" min="1" value="1" />
+                        <label for="access-current">ID del usuario “actual”</label>
+                        <input id="access-current" type="number" min="1" value="1" />
+                        <p class="hint">
+                            Usuarios demo: ID <code>1</code> (alice), <code>2</code> (bob).
+                            Prueba con <code>currentUserId=1</code> y <code>id=2</code>.
+                        </p>
+
+                        <div class="btn-group">
+                            <button class="btn-primary" onclick="runAccess('insecure')">INSEGURO</button>
+                            <button class="btn-secondary" onclick="runAccess('secure')">SEGURO</button>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <h3>Resultado</h3>
+                        <pre id="access-output">– Aquí verás el resultado o error (403/404)…</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- A04 Insecure Design -->
+        <section id="section-a04" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2>A04 – Insecure Design (rate limiting en login)</h2>
+                    <div>
+                        <span class="badge-unsafe">/api/insecuredesign/login-insecure</span>
+                        &nbsp;
+                        <span class="badge-safe">/api/insecuredesign/login-secure</span>
+                    </div>
+                </div>
+
+                <p class="hint">
+                    <strong>¿Qué es?</strong> Problemas de diseño (no sólo de implementación) que dejan huecos estructurales:
+                    ausencia de límites de negocio, falta de bloqueo tras muchos intentos, flujos inseguros por defecto, etc.
+                </p>
+                <p class="hint">
+                    <strong>¿Cómo se explota?</strong> Un atacante puede lanzar fuerza bruta ilimitada, abuse de flujos lógicos
+                    (por ejemplo, reset de contraseña sin verificar identidad) o saltarse pasos críticos por mal diseño.
+                </p>
+                <p class="hint">
+                    <strong>Más info oficial:</strong>
+                    <a href="https://owasp.org/Top10/2021/A04_2021-Insecure_Design/" target="_blank" rel="noopener">
+                        OWASP Top 10 – A04:2021 Insecure Design
+                    </a>
+                </p>
+
+                <div class="row">
+                    <div class="col">
+                        <h3>Login demo</h3>
+                        <label for="des-username">Usuario</label>
+                        <input id="des-username" type="text" value="demo" />
+                        <label for="des-password">Password</label>
+                        <input id="des-password" type="password" value="Password123" />
+                        <p class="hint">
+                            Haz varios intentos fallidos con la versión segura; verás un <code>429 Too Many Requests</code>.
+                        </p>
+
+                        <div class="btn-group">
+                            <button class="btn-primary" onclick="runInsecureDesign('insecure')">Login INSEGURO</button>
+                            <button class="btn-secondary" onclick="runInsecureDesign('secure')">Login SEGURO (rate limit)</button>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <h3>Respuesta</h3>
+                        <pre id="des-output">– Aquí verás estado y cuerpo de la respuesta…</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- A07 Auth & Session -->
+        <section id="section-a07" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2>A07 – Identification & Authentication Failures</h2>
+                    <div>
+                        <span class="badge-unsafe">/api/auth/login-insecure</span>
+                        &nbsp;
+                        <span class="badge-safe">/api/auth/login-secure</span>
+                    </div>
+                </div>
+
+                <p class="hint">
+                    <strong>¿Qué es?</strong> Errores en cómo identificamos y autenticamos usuarios: políticas de password débiles,
+                    tokens predecibles, sesiones sin expiración, falta de 2FA, etc.
+                </p>
+                <p class="hint">
+                    <strong>¿Cómo se explota?</strong> Fuerza bruta, relleno de credenciales filtradas, robo de sesiones, uso de
+                    tokens fáciles de adivinar o que nunca expiran.
+                </p>
+                <p class="hint">
+                    <strong>Más info oficial:</strong>
+                    <a href="https://owasp.org/Top10/2021/A07_2021-Identification_and_Authentication_Failures/" target="_blank" rel="noopener">
+                        OWASP Top 10 – A07:2021 Identification and Authentication Failures
+                    </a>
+                </p>
+
+                <div class="row">
+                    <div class="col">
+                        <h3>Login y token</h3>
+                        <label for="auth-username">Usuario</label>
+                        <input id="auth-username" type="text" value="demo" />
+                        <label for="auth-password">Password</label>
+                        <input id="auth-password" type="password" value="Password123" />
+
+                        <div class="btn-group">
+                            <button class="btn-primary" onclick="runAuthLogin('insecure')">Login INSEGURO</button>
+                            <button class="btn-secondary" onclick="runAuthLogin('secure')">Login SEGURO</button>
+                        </div>
+
+                        <label for="auth-token" style="margin-top:.75rem;">Token devuelto</label>
+                        <input id="auth-token" type="text" />
+
+                        <div class="btn-group">
+                            <button class="btn-primary" onclick="runAuthMe('insecure')">/me INSEGURO</button>
+                            <button class="btn-secondary" onclick="runAuthMe('secure')">/me SEGURO</button>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <h3>Respuesta</h3>
+                        <pre id="auth-output">– Aquí verás token y datos de sesión…</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- A08 Integrity -->
+        <section id="section-a08" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2>A08 – Software & Data Integrity Failures</h2>
+                    <div>
+                        <span class="badge-unsafe">/api/integrity/insecure-update</span>
+                        &nbsp;
+                        <span class="badge-safe">/api/integrity/secure-update</span>
+                    </div>
+                </div>
+
+                <p class="hint">
+                    <strong>¿Qué es?</strong> Situaciones donde asumimos que código, datos o actualizaciones son de confianza,
+                    sin verificar su integridad (firmas, checksums, validaciones), permitiendo que contenido malicioso se ejecute o se aplique.
+                </p>
+                <p class="hint">
+                    <strong>¿Cómo se explota?</strong> Un atacante puede modificar payloads de configuración, actualizaciones o
+                    datos serializados, inyectando cambios peligrosos que la aplicación acepta sin validar.
+                </p>
+                <p class="hint">
+                    <strong>Más info oficial:</strong>
+                    <a href="https://owasp.org/Top10/2021/A08_2021-Software_and_Data_Integrity_Failures/" target="_blank" rel="noopener">
+                        OWASP Top 10 – A08:2021 Software and Data Integrity Failures
+                    </a>
+                </p>
+
+                <div class="row">
+                    <div class="col">
+                        <h3>Config actual</h3>
+                        <button class="btn-secondary" onclick="runIntegrityGet()">GET /api/integrity</button>
+                        <pre id="int-get-output" style="margin-top:.5rem;">– Pulsa el botón para ver la configuración actual…</pre>
+                    </div>
+                    <div class="col">
+                        <h3>Actualizar configuración</h3>
+                        <label for="int-json">JSON a enviar</label>
+                        <textarea id="int-json" rows="5">{
+  "sessionTimeoutMinutes": 5,
+  "enableDangerousFeatureX": true,
+  "adminEmail": "admin@example.com"
+}</textarea>
+                        <p class="hint">
+                            Inseguro: deserializa directamente a <code>AppSettings</code> sin validar.
+                            Seguro: usa DTO con validaciones.
+                        </p>
+                        <div class="btn-group">
+                            <button class="btn-primary" onclick="runIntegrityUpdate('insecure')">Update INSEGURO</button>
+                            <button class="btn-secondary" onclick="runIntegrityUpdate('secure')">Update SEGURO</button>
+                        </div>
+                        <pre id="int-update-output" style="margin-top:.5rem;">– Aquí verás la respuesta del update…</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- A09 Logging -->
+        <section id="section-a09" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2>A09 – Security Logging & Monitoring Failures</h2>
+                    <div>
+                        <span class="badge-unsafe">/api/logging/transfer-insecure</span>
+                        &nbsp;
+                        <span class="badge-safe">/api/logging/transfer-secure</span>
+                    </div>
+                </div>
+
+                <p class="hint">
+                    <strong>¿Qué es?</strong> Falta de logs de seguridad, logs incompletos o ausencia de monitoreo y alertas.
+                    Esto hace que los incidentes pasen desapercibidos o se detecten demasiado tarde.
+                </p>
+                <p class="hint">
+                    <strong>¿Cómo se explota?</strong> Cualquier otra vulnerabilidad se vuelve más grave si no hay trazas:
+                    el atacante puede moverse lateralmente y exfiltrar datos sin que nadie lo note.
+                </p>
+                <p class="hint">
+                    <strong>Más info oficial:</strong>
+                    <a href="https://owasp.org/Top10/2021/A09_2021-Security_Logging_and_Monitoring_Failures/" target="_blank" rel="noopener">
+                        OWASP Top 10 – A09:2021 Security Logging and Monitoring Failures
+                    </a>
+                </p>
+
+                <div class="row">
+                    <div class="col">
+                        <h3>Transferencia</h3>
+                        <label for="log-from">Cuenta origen</label>
+                        <input id="log-from" type="text" value="ACC-001" />
+                        <label for="log-to">Cuenta destino</label>
+                        <input id="log-to" type="text" value="ACC-002" />
+                        <label for="log-amount">Monto</label>
+                        <input id="log-amount" type="number" step="0.01" value="100" />
+                        <p class="hint">
+                            Prueba con monto <= 0. La diferencia real está en los logs del servidor.
+                        </p>
+
+                        <div class="btn-group">
+                            <button class="btn-primary" onclick="runLogging('insecure')">Transferencia INSEGURA</button>
+                            <button class="btn-secondary" onclick="runLogging('secure')">Transferencia SEGURA</button>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <h3>Respuesta</h3>
+                        <pre id="log-output">– Aquí verás la respuesta. Revisa también la consola/logs del backend…</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- A10 SSRF -->
+        <section id="section-a10" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2>A10 – Server-Side Request Forgery (SSRF)</h2>
+                    <div>
+                        <span class="badge-unsafe">/api/ssrf/insecure</span>
+                        &nbsp;
+                        <span class="badge-safe">/api/ssrf/secure</span>
+                    </div>
+                </div>
+
+                <p class="hint">
+                    <strong>¿Qué es?</strong> SSRF aparece cuando la app permite al usuario indicar una URL y el servidor
+                    hace peticiones a esa URL sin validarla, pudiendo acceder a recursos internos o servicios protegidos.
+                </p>
+                <p class="hint">
+                    <strong>¿Cómo se explota?</strong> El atacante pone URLs apuntando a <code>localhost</code>,
+                    redes internas o endpoints de metadatos en cloud, usando al servidor como “proxy” hacia recursos que
+                    desde fuera no son accesibles.
+                </p>
+                <p class="hint">
+                    <strong>Más info oficial:</strong>
+                    <a href="https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29/" target="_blank" rel="noopener">
+                        OWASP Top 10 – A10:2021 Server-Side Request Forgery (SSRF)
+                    </a>
+                </p>
+
+                <div class="row">
+                    <div class="col">
+                        <h3>URL objetivo</h3>
+                        <label for="ssrf-url">URL</label>
+                        <input id="ssrf-url" type="text" value="https://api.github.com" />
+                        <p class="hint">
+                            Inseguro: hace la petición a cualquier URL.
+                            Seguro: sólo HTTP/HTTPS y hosts en lista blanca.
+                        </p>
+
+                        <div class="btn-group">
+                            <button class="btn-primary" onclick="runSsrf('insecure')">SSRF INSEGURO</button>
+                            <button class="btn-secondary" onclick="runSsrf('secure')">SSRF SEGURO</button>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <h3>Respuesta remota</h3>
+                        <pre id="ssrf-output">– Aquí verás el cuerpo de la respuesta (truncado)…</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- A05/A06 info -->
+        <section id="section-a0506" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2>A05 – Security Misconfiguration & A06 – Vulnerable Components</h2>
+                </div>
+
+                <p class="hint">
+                    <strong>A05 – Security Misconfiguration:</strong> configuraciones por defecto, servicios expuestos, CORS
+                    demasiado permisivo, headers de seguridad ausentes, etc.
+                    <br />
+                    <strong>Más info:</strong>
+                    <a href="https://owasp.org/Top10/2021/A05_2021-Security_Misconfiguration/" target="_blank" rel="noopener">
+                        OWASP Top 10 – A05:2021 Security Misconfiguration
+                    </a>
+                </p>
+                <p class="hint">
+                    <strong>A06 – Vulnerable and Outdated Components:</strong> uso de frameworks, librerías o runtimes con
+                    vulnerabilidades conocidas o sin mantenimiento.
+                    <br />
+                    <strong>Más info:</strong>
+                    <a href="https://owasp.org/Top10/2021/A06_2021-Vulnerable_and_Outdated_Components/" target="_blank" rel="noopener">
+                        OWASP Top 10 – A06:2021 Vulnerable and Outdated Components
+                    </a>
+                </p>
+
+                <div class="row">
+                    <div class="col">
+                        <h3>A05 – Misconfiguration</h3>
+                        <p class="hint">
+                            En <code>Program.cs</code> tienes una política CORS insegura y otra más segura:
+                        </p>
+<pre>
+options.AddPolicy("InsecureCors", policy =&gt; {
+    policy.AllowAnyOrigin()
+          .AllowAnyHeader()
+          .AllowAnyMethod();
+});
+</pre>
+                        <p class="hint">
+                            Cambiar <code>UseCors("FrontendPolicy")</code> por <code>"InsecureCors"</code>
+                            demostraría un anti-patrón (permitir cualquier origen).
+                        </p>
+                    </div>
+                    <div class="col">
+                        <h3>A06 – Componentes vulnerables/desactualizados</h3>
+                        <p class="hint">
+                            En el <code>.csproj</code> se usa una versión antigua de <code>Newtonsoft.Json</code>:
+                        </p>
+<pre>
+&lt;PackageReference Include="Newtonsoft.Json" Version="9.0.1" /&gt;
+</pre>
+                        <p class="hint">
+                            En un entorno real deberías revisar CVEs y actualizar.
+                            Por ejemplo: <code>dotnet list package --outdated</code>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.target).classList.add('active');
+            });
+        });
+
+        async function safeFetchJson(url, options = {}) {
+            try {
+                const res = await fetch(url, options);
+                const text = await res.text();
+                let data;
+                try { data = text ? JSON.parse(text) : null; }
+                catch { data = { raw: text }; }
+                return { ok: res.ok, status: res.status, data };
+            } catch (err) {
+
+
+                return { ok: false, status: 0, data: { error: String(err) } };
+            }
+        }
+
+        // A03: SQL Injection
+        async function runSqlInjection(mode) {
+            const username = document.getElementById('sql-username').value;
+            const password = document.getElementById('sql-password').value;
+            const endpoint = mode === 'insecure'
+                ? `/api/injection/insecure-db?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+                : `/api/injection/secure-db?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+
+            const res = await safeFetchJson(endpoint);
+            const queryPre = document.getElementById('sql-query-output');
+            const resultsWrapper = document.getElementById('sql-results-wrapper');
+
+            if (!res.ok) {
+                queryPre.textContent = `Error HTTP ${res.status}\n${JSON.stringify(res.data, null, 2)}`;
+                resultsWrapper.innerHTML = `<div class="hint">Error al llamar a la API. ¿Está levantado el backend?</div>`;
+                return;
+            }
+
+            const executedSql =
+                res.data.executedSql ||
+                res.data.generatedSql ||
+                res.data.ExecutedSql ||
+                res.data.GeneratedSql ||
+                '(no devuelto)';
+
+            queryPre.textContent = executedSql;
+
+            const users = res.data.users || res.data.Users || [];
+            if (!Array.isArray(users) || users.length === 0) {
+                resultsWrapper.innerHTML = `<div class="hint">La consulta no devolvió filas.</div>`;
+                return;
+            }
+
+            const rowsHtml = users.map(u => `
+                    <tr>
+                        <td>${u.id ?? u.Id}</td>
+                        <td>${u.userName ?? u.UserName}</td>
+                        <td>${u.password ?? u.Password}</td>
+                    </tr>
+                `).join('');
+
+            resultsWrapper.innerHTML = `
+                    <table>
+                        <thead><tr><th>Id</th><th>UserName</th><th>Password</th></tr></thead>
+                        <tbody>${rowsHtml}</tbody>
+                    </table>
+                    <p class="hint">
+                        Si con <code>' OR 1=1 --</code> ves todas las filas, has explotado la inyección.
+                    </p>`;
+        }
+
+        // A02: Crypto
+        async function runCrypto(mode) {
+            const username = document.getElementById('crypto-username').value;
+            const email = document.getElementById('crypto-email').value;
+            const password = document.getElementById('crypto-password').value;
+            const endpoint = mode === 'insecure'
+                ? '/api/crypto/insecure-register'
+                : '/api/crypto/secure-register';
+
+            const res = await safeFetchJson(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userName: username, email, password })
+            });
+
+            const output = document.getElementById('crypto-output');
+            output.textContent = `HTTP ${res.status}\n${JSON.stringify(res.data, null, 2)}`;
+        }
+
+        // A01: Access control
+        async function runAccess(mode) {
+            const id = document.getElementById('access-id').value || 1;
+            const current = document.getElementById('access-current').value || 1;
+            const endpoint = mode === 'insecure'
+                ? `/api/accesscontrol/insecure/${encodeURIComponent(id)}`
+                : `/api/accesscontrol/secure/${encodeURIComponent(id)}?currentUserId=${encodeURIComponent(current)}`;
+
+            const res = await safeFetchJson(endpoint);
+            const output = document.getElementById('access-output');
+            output.textContent = `HTTP ${res.status}\n${JSON.stringify(res.data, null, 2)}`;
+        }
+
+        // A04: Insecure design
+        async function runInsecureDesign(mode) {
+            const username = document.getElementById('des-username').value;
+            const password = document.getElementById('des-password').value;
+            const endpoint = mode === 'insecure'
+                ? '/api/insecuredesign/login-insecure'
+                : '/api/insecuredesign/login-secure';
+
+            const res = await safeFetchJson(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userName: username, password })
+            });
+
+            document.getElementById('des-output').textContent =
+                `HTTP ${res.status}\n${JSON.stringify(res.data, null, 2)}`;
+        }
+
+        // A07: Auth & session
+        async function runAuthLogin(mode) {
+            const username = document.getElementById('auth-username').value;
+            const password = document.getElementById('auth-password').value;
+            const endpoint = mode === 'insecure'
+                ? '/api/auth/login-insecure'
+                : '/api/auth/login-secure';
+
+            const res = await safeFetchJson(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userName: username, password })
+            });
+
+            const output = document.getElementById('auth-output');
+            output.textContent = `HTTP ${res.status}\n${JSON.stringify(res.data, null, 2)}`;
+
+            if (res.ok && res.data && (res.data.Token || res.data.token)) {
+                document.getElementById('auth-token').value = res.data.Token || res.data.token;
+            }
+        }
+
+        async function runAuthMe(mode) {
+            const token = document.getElementById('auth-token').value;
+            const output = document.getElementById('auth-output');
+            if (!token) {
+                output.textContent = 'Primero haz login para obtener un token.';
+                return;
+            }
+            const endpoint = mode === 'insecure'
+                ? `/api/auth/me-insecure?token=${encodeURIComponent(token)}`
+                : `/api/auth/me-secure?token=${encodeURIComponent(token)}`;
+
+            const res = await safeFetchJson(endpoint);
+            output.textContent = `HTTP ${res.status}\n${JSON.stringify(res.data, null, 2)}`;
+        }
+
+        // A08: Integrity
+        async function runIntegrityGet() {
+            const res = await safeFetchJson('/api/integrity');
+            document.getElementById('int-get-output').textContent =
+                `HTTP ${res.status}\n${JSON.stringify(res.data, null, 2)}`;
+        }
+
+        async function runIntegrityUpdate(mode) {
+            const raw = document.getElementById('int-json').value;
+            const endpoint = mode === 'insecure'
+                ? '/api/integrity/insecure-update'
+                : '/api/integrity/secure-update';
+
+            let body;
+            if (mode === 'insecure') {
+                body = JSON.stringify(raw);
+            } else {
+                try {
+                    body = JSON.stringify(JSON.parse(raw));
+                } catch {
+                    alert('El JSON no es válido.');
+                    return;
+                }
+            }
+
+            const res = await safeFetchJson(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body
+            });
+
+            document.getElementById('int-update-output').textContent =
+                `HTTP ${res.status}\n${JSON.stringify(res.data, null, 2)}`;
+        }
+
+        // A09: Logging
+        async function runLogging(mode) {
+            const fromAccount = document.getElementById('log-from').value;
+            const toAccount = document.getElementById('log-to').value;
+            const amount = Number(document.getElementById('log-amount').value);
+            const endpoint = mode === 'insecure'
+                ? '/api/logging/transfer-insecure'
+                : '/api/logging/transfer-secure';
+
+            const res = await safeFetchJson(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fromAccount, toAccount, amount })
+            });
+
+            document.getElementById('log-output').textContent =
+                `HTTP ${res.status}\n${JSON.stringify(res.data, null, 2)}`;
+        }
+
+        // A10: SSRF
+        async function runSsrf(mode) {
+            const url = document.getElementById('ssrf-url').value;
+            const endpoint = mode === 'insecure'
+                ? `/api/ssrf/insecure?url=${encodeURIComponent(url)}`
+                : `/api/ssrf/secure?url=${encodeURIComponent(url)}`;
+
+            const res = await safeFetchJson(endpoint);
+            document.getElementById('ssrf-output').textContent =
+                `HTTP ${res.status}\n${JSON.stringify(res.data, null, 2).slice(0, 800)}...`;
+        }
+    </script>
+</body>
+</html>
